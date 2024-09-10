@@ -67,34 +67,28 @@ class RecintosZoo {
       );
    }
 
-   // Verifica se é possível adicionar um carnívoro no recinto
-   podeAdicionarCarnivoro(recinto, animal) {
+   // Verifica as condições específicas para cada animal
+   podeAdicionarAnimal(recinto, animal, quantidade) {
       const animaisDoRecinto = recinto.animais.map((a) => a.especie);
       const possuiCarnivoro = this.possuiCarnivoro(animaisDoRecinto);
-      const recintoEstaVazio = recinto.animais.length === 0;
       const mesmaEspecie = animaisDoRecinto.includes(animal);
-      return (possuiCarnivoro && mesmaEspecie) || recintoEstaVazio;
-   }
+      const incluiBioma = this.determinarBiomas(animal).some((bioma) =>
+         recinto.bioma.includes(bioma)
+      );
 
-   // Verifica se é possível adicionar macacos no recinto
-   podeAdicionarMacaco(recinto, quantidade) {
-      const possuiCarnivoro = this.possuiCarnivoro(
-         recinto.animais.map((a) => a.especie)
-      );
-      return (recinto.animais.length > 0 || quantidade > 1) && !possuiCarnivoro;
-   }
-
-   // Verifica se é possível adicionar hipopótamos no recinto
-   podeAdicionarHipopotamo(recinto) {
-      const possuiCarnivoro = this.possuiCarnivoro(
-         recinto.animais.map((a) => a.especie)
-      );
-      return (
-         (recinto.bioma.includes("savana") &&
-            recinto.bioma.includes("rio") &&
-            !possuiCarnivoro) ||
-         recinto.animais.length === 0
-      );
+      if (this.carnivoros.includes(animal)) {
+         return (
+            (possuiCarnivoro && mesmaEspecie) || recinto.animais.length === 0
+         );
+      } else if (animal === "MACACO") {
+         return (
+            (recinto.animais.length > 0 || quantidade > 1) && !possuiCarnivoro
+         );
+      } else if (animal === "HIPOPOTAMO") {
+         return incluiBioma && !possuiCarnivoro;
+      } else {
+         return !possuiCarnivoro;
+      }
    }
 
    // Verifica se o recinto possui animais de outra espécie
@@ -110,17 +104,16 @@ class RecintosZoo {
       const erro = this.validadorDeDados(animal, quantidade);
       if (erro) return erro;
 
-      const biomas = this.determinarBiomas(animal);
       const resultado = [];
 
       this.recintos.forEach((recinto) => {
-         const incluiBioma = biomas.some((bioma) =>
-            recinto.bioma.includes(bioma)
-         );
          const { espacoOcupado, espacoNecessario } = this.calculaEspacos(
             recinto,
             animal,
             quantidade
+         );
+         const incluiBioma = this.determinarBiomas(animal).some((bioma) =>
+            recinto.bioma.includes(bioma)
          );
 
          if (
@@ -128,7 +121,7 @@ class RecintosZoo {
             espacoOcupado + espacoNecessario <= recinto.tamanhoTotal
          ) {
             if (this.carnivoros.includes(animal)) {
-               if (this.podeAdicionarCarnivoro(recinto, animal)) {
+               if (this.podeAdicionarAnimal(recinto, animal, quantidade)) {
                   resultado.push(
                      `Recinto ${recinto.numero} (espaço livre: ${
                         recinto.tamanhoTotal - espacoOcupado - espacoNecessario
@@ -142,42 +135,15 @@ class RecintosZoo {
                   ajusteEspaco = 1;
                }
 
-               if (animal === "MACACO") {
-                  if (this.podeAdicionarMacaco(recinto, quantidade)) {
-                     resultado.push(
-                        `Recinto ${recinto.numero} (espaço livre: ${
-                           recinto.tamanhoTotal -
-                           espacoOcupado -
-                           espacoNecessario -
-                           ajusteEspaco
-                        } total: ${recinto.tamanhoTotal})`
-                     );
-                  }
-               } else if (animal === "HIPOPOTAMO") {
-                  if (this.podeAdicionarHipopotamo(recinto)) {
-                     resultado.push(
-                        `Recinto ${recinto.numero} (espaço livre: ${
-                           recinto.tamanhoTotal -
-                           espacoOcupado -
-                           espacoNecessario -
-                           ajusteEspaco
-                        } total: ${recinto.tamanhoTotal})`
-                     );
-                  }
-               } else {
-                  const possuiCarnivoro = this.possuiCarnivoro(
-                     recinto.animais.map((a) => a.especie)
+               if (this.podeAdicionarAnimal(recinto, animal, quantidade)) {
+                  resultado.push(
+                     `Recinto ${recinto.numero} (espaço livre: ${
+                        recinto.tamanhoTotal -
+                        espacoOcupado -
+                        espacoNecessario -
+                        ajusteEspaco
+                     } total: ${recinto.tamanhoTotal})`
                   );
-                  if(!possuiCarnivoro){
-                     resultado.push(
-                        `Recinto ${recinto.numero} (espaço livre: ${
-                           recinto.tamanhoTotal -
-                           espacoOcupado -
-                           espacoNecessario -
-                           ajusteEspaco
-                        } total: ${recinto.tamanhoTotal})`
-                     );
-                  }
                }
             }
          }
