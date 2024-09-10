@@ -1,7 +1,6 @@
 import { RecintosZoo } from "./recintos-zoo.js";
 
 describe("Recintos do Zoologico", () => {
-
    test("Deve rejeitar animal inválido", () => {
       const resultado = new RecintosZoo().analisaRecintos("UNICORNIO", 1);
       expect(resultado.erro).toBe("Animal inválido");
@@ -27,6 +26,18 @@ describe("Recintos do Zoologico", () => {
          "Recinto 4 (espaço livre: 5 total: 8)"
       );
       expect(resultado.recintosViaveis.length).toBe(1);
+   });
+
+   test("Deve encontrar recinto para 1 gazela", () => {
+      const resultado = new RecintosZoo().analisaRecintos("GAZELA", 1);
+      expect(resultado.erro).toBeFalsy();
+      expect(resultado.recintosViaveis[0]).toBe(
+         "Recinto 1 (espaço livre: 4 total: 10)"
+      );
+      expect(resultado.recintosViaveis[1]).toBe(
+         "Recinto 3 (espaço livre: 3 total: 7)"
+      );
+      expect(resultado.recintosViaveis.length).toBe(2);
    });
 
    test("Deve encontrar recintos para 2 macacos", () => {
